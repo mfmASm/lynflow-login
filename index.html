@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LynFlow — Plateforme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-dim: rgba(201,168,76,0.15);
+    --bg: #0a0a0a;
+    --card: rgba(12,12,12,0.95);
+    --text: #f0ece4;
+    --text-dim: rgba(240,236,228,0.4);
+    --border: rgba(201,168,76,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+  }
+
+  #canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .grain {
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 1;
+    animation: grain-shift 8s steps(10) infinite;
+  }
+
+  @keyframes grain-shift {
+    0%,100%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}20%{transform:translate(3%,1%)}
+    30%{transform:translate(-1%,4%)}40%{transform:translate(4%,-2%)}50%{transform:translate(-3%,3%)}
+    60%{transform:translate(2%,-4%)}70%{transform:translate(-4%,2%)}80%{transform:translate(1%,-1%)}
+    90%{transform:translate(-2%,4%)}
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* LEFT */
+  .left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .left::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 10%; bottom: 10%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fade-up 0.8s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.1s;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #1e2535, #0f1520);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 0;
+    animation: fade-up 0.8s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.2s;
+  }
+
+  .hero-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 300;
+    line-height: 1.05;
+    margin-bottom: 28px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 340px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 32px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 40px;
+  }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .left-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fade-up 0.8s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.35s;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    padding: 3px;
+  }
+
+  .lang-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .lang-btn.active, .lang-btn:hover {
+    background: rgba(201,168,76,0.12);
+    color: var(--gold);
+  }
+
+  .left-tagline {
+    font-size: 10px;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 0.08em;
+  }
+
+  /* RIGHT */
+  .right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 48px 44px;
+    box-shadow:
+      0 0 0 1px rgba(201,168,76,0.04),
+      0 40px 100px rgba(0,0,0,0.7),
+      0 0 80px rgba(201,168,76,0.03);
+    backdrop-filter: blur(24px);
+    position: relative;
+    overflow: hidden;
+    animation: card-in 0.8s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.15s;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-dim);
+    line-height: 1.65;
+    margin-bottom: 36px;
+  }
+
+  /* Big redirect button */
+  .btn-redirect {
+    width: 100%;
+    background: var(--gold);
+    border: none;
+    border-radius: 3px;
+    color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-redirect::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+  }
+
+  .btn-redirect:hover {
+    background: #d4b460;
+    box-shadow: 0 8px 32px rgba(201,168,76,0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-redirect:hover::after {
+    transform: translateX(100%);
+  }
+
+  .btn-redirect.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .btn-arrow {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-redirect:hover .btn-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Loading bar */
+  .loading-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .loading-bar.active { display: block; }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .card-footer {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.15);
+    line-height: 1.6;
+  }
+
+  .card-footer a {
+    color: rgba(201,168,76,0.45);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .card-footer a:hover { color: var(--gold); }
+
+  /* Secure badge */
+  .secure-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+  }
+
+  .secure-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.4);
+    animation: pulse-dot 2s ease infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* GHOST TEXT */
+  .ghost-text {
+    position: fixed;
+    bottom: 6%; left: 4%;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11vw;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(201,168,76,0.025);
+    pointer-events: none;
+    z-index: 1;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+    transition: transform 0.2s ease-out;
+  }
+
+  /* PARALLAX */
+  .parallax-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+  }
+
+  .orb-1 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,168,76,0.07), transparent 70%);
+    top: 20%; left: 10%;
+  }
+
+  .orb-2 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,168,76,0.04), transparent 70%);
+    bottom: 15%; right: 15%;
+  }
+
+  /* RTL */
+  html[dir="rtl"] .wrapper { direction: rtl; }
+  html[dir="rtl"] .left::after { right: auto; left: 0; }
+  html[dir="rtl"] .hero-eyebrow::before { display: none; }
+  html[dir="rtl"] .hero-eyebrow::after {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 768px) {
+    .wrapper { grid-template-columns: 1fr; }
+    .left { display: none; }
+    .right { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div class="grain"></div>
+
+<div class="parallax-layer" id="parallaxLayer">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<div class="ghost-text" id="ghostText">LynFlow</div>
+
+<div class="wrapper">
+
+  <!-- LEFT -->
+  <div class="left" id="leftPanel">
+    <div class="logo">
+      <div class="logo-mark">LF</div>
+      <span class="logo-text">LynFlow</span>
+    </div>
+
+    <div class="hero">
+      <div class="hero-eyebrow" id="eyebrow">Plateforme digitale</div>
+      <h1 class="hero-title" id="heroTitle">
+        Bienvenue sur<br>la plateforme<br><em>LynFlow.</em>
+      </h1>
+      <p class="hero-sub" id="heroSub">
+        L'infrastructure digitale complète pour piloter, automatiser et développer votre activité — tout en un seul endroit.
+      </p>
+      <div class="stats">
+        <div>
+          <div class="stat-num">3+</div>
+          <div class="stat-label" id="stat1">Clients actifs</div>
+        </div>
+        <div>
+          <div class="stat-num">24/7</div>
+          <div class="stat-label" id="stat2">Disponibilité</div>
+        </div>
+        <div>
+          <div class="stat-num">100%</div>
+          <div class="stat-label" id="stat3">Automatisé</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('ar')">AR</button>
+      </div>
+      <span class="left-tagline">© 2026 LynFlow Agency</span>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="login-card">
+      <div class="card-eyebrow" id="cardEyebrow">Accès plateforme</div>
+      <h2 class="card-title" id="cardTitle">Bienvenue<br>sur LynFlow.</h2>
+      <p class="card-desc" id="cardDesc">
+        Votre espace de gestion est prêt. Accédez à votre tableau de bord pour piloter votre activité.
+      </p>
+
+      <div class="secure-badge">
+        <div class="secure-dot"></div>
+        <span id="secureText">Connexion sécurisée</span>
+      </div>
+
+      <div class="loading-bar" id="loadingBar">
+        <div class="loading-bar-fill" id="loadingFill"></div>
+      </div>
+
+      <a class="btn-redirect" id="btnRedirect" href="#" onclick="lfRedirect(event)">
+        <span id="btnText">Accéder à la plateforme</span>
+        <span class="btn-arrow">→</span>
+      </a>
+
+      <div class="card-footer" id="cardFooter">
+        Vous serez redirigé vers <a href="https://app.lynflow.app">app.lynflow.app</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CANVAS ──
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, mouse = { x: 0, y: 0 }, time = 0;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const lines = Array.from({ length: 18 }, () => ({
+  x: Math.random()*1.4-0.2, y: Math.random()*1.4-0.2,
+  vx: (Math.random()-0.5)*0.00012, vy: (Math.random()-0.5)*0.00012,
+  length: 0.15+Math.random()*0.25, angle: Math.random()*Math.PI*2,
+  va: (Math.random()-0.5)*0.003, alpha: 0.02+Math.random()*0.04, width: 0.5+Math.random()*1
+}));
+
+const particles = Array.from({ length: 55 }, () => ({
+  x: Math.random(), y: Math.random(), r: 0.5+Math.random()*1.5,
+  vx: (Math.random()-0.5)*0.00008, vy: -0.00005-Math.random()*0.0001,
+  alpha: 0.1+Math.random()*0.3, gold: Math.random()>0.6
+}));
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+  const bg = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.8);
+  bg.addColorStop(0,'#111117'); bg.addColorStop(1,'#080808');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  const mg = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,W*.35);
+  mg.addColorStop(0,'rgba(201,168,76,0.045)'); mg.addColorStop(1,'transparent');
+  ctx.fillStyle=mg; ctx.fillRect(0,0,W,H);
+  time+=0.008;
+  const mx=mouse.x/W, my=mouse.y/H;
+  lines.forEach(l=>{
+    l.x+=l.vx+(mx-0.5)*0.00004; l.y+=l.vy+(my-0.5)*0.00004; l.angle+=l.va;
+    if(l.x<-0.3)l.x=1.3; if(l.x>1.3)l.x=-0.3; if(l.y<-0.3)l.y=1.3; if(l.y>1.3)l.y=-0.3;
+    const px=l.x*W,py=l.y*H,len=l.length*Math.min(W,H);
+    const dx=Math.cos(l.angle)*len/2,dy=Math.sin(l.angle)*len/2;
+    const pulse=Math.sin(time+l.x*5)*.3+.7;
+    ctx.beginPath(); ctx.moveTo(px-dx,py-dy); ctx.lineTo(px+dx,py+dy);
+    ctx.strokeStyle=`rgba(201,168,76,${l.alpha*pulse})`; ctx.lineWidth=l.width; ctx.stroke();
+  });
+  particles.forEach(p=>{
+    p.x+=p.vx+(mx-0.5)*0.00003; p.y+=p.vy;
+    if(p.y<-0.02){p.y=1.02;p.x=Math.random();}
+    if(p.x<-0.02)p.x=1.02; if(p.x>1.02)p.x=-0.02;
+    const pulse=Math.sin(time*1.5+p.x*8)*.3+.7;
+    ctx.beginPath(); ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.gold?`rgba(201,168,76,${p.alpha*pulse})`:`rgba(255,255,255,${p.alpha*.4*pulse})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ── PARALLAX ──
+document.addEventListener('mousemove', e => {
+  mouse.x=e.clientX; mouse.y=e.clientY;
+  const dx=(e.clientX/window.innerWidth-0.5)*18, dy=(e.clientY/window.innerHeight-0.5)*18;
+  document.getElementById('parallaxLayer').style.transform=`translate(${dx}px,${dy}px)`;
+  const ldx=(e.clientX/window.innerWidth-0.5)*8, ldy=(e.clientY/window.innerHeight-0.5)*8;
+  document.getElementById('leftPanel').style.transform=`translate(${ldx}px,${ldy}px)`;
+  const gdx=(e.clientX/window.innerWidth-0.5)*-12, gdy=(e.clientY/window.innerHeight-0.5)*-12;
+  document.getElementById('ghostText').style.transform=`translate(${gdx}px,${gdy}px)`;
+});
+
+// ── REDIRECT ──
+function lfRedirect(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnRedirect');
+  const bar = document.getElementById('loadingBar');
+  const fill = document.getElementById('loadingFill');
+  const t = translations[currentLang];
+
+  btn.classList.add('loading');
+  document.getElementById('btnText').textContent = t.btnLoading;
+  bar.classList.add('active');
+
+  setTimeout(() => { fill.style.width = '100%'; }, 50);
+  setTimeout(() => { window.location.href = 'https://app.lynflow.app'; }, 2000);
+}
+
+// ── LANGUAGE ──
+let currentLang = 'fr';
+const translations = {
+  fr: {
+    eyebrow: 'Plateforme digitale',
+    heroTitle: 'Bienvenue sur<br>la plateforme<br><em>LynFlow.</em>',
+    heroSub: "L'infrastructure digitale complète pour piloter, automatiser et développer votre activité — tout en un seul endroit.",
+    stat1: 'Clients actifs', stat2: 'Disponibilité', stat3: 'Automatisé',
+    cardEyebrow: 'Accès plateforme',
+    cardTitle: 'Bienvenue<br>sur LynFlow.',
+    cardDesc: 'Votre espace de gestion est prêt. Accédez à votre tableau de bord pour piloter votre activité.',
+    secureText: 'Connexion sécurisée',
+    btnText: 'Accéder à la plateforme',
+    btnLoading: 'Redirection en cours...',
+    cardFooter: 'Vous serez redirigé vers <a href="https://app.lynflow.app">app.lynflow.app</a>'
+  },
+  en: {
+    eyebrow: 'Digital Platform',
+    heroTitle: 'Welcome to<br>the LynFlow<br><em>Platform.</em>',
+    heroSub: 'The complete digital infrastructure to manage, automate and grow your business — all in one place.',
+    stat1: 'Active Clients', stat2: 'Availability', stat3: 'Automated',
+    cardEyebrow: 'Platform Access',
+    cardTitle: 'Welcome to<br>LynFlow.',
+    cardDesc: 'Your management space is ready. Access your dashboard to run your business.',
+    secureText: 'Secure connection',
+    btnText: 'Access the platform',
+    btnLoading: 'Redirecting...',
+    cardFooter: 'You will be redirected to <a href="https://app.lynflow.app">app.lynflow.app</a>'
+  },
+  ar: {
+    eyebrow: 'المنصة الرقمية',
+    heroTitle: 'مرحباً بك في<br>منصة<br><em>LynFlow.</em>',
+    heroSub: 'البنية التحتية الرقمية الكاملة لإدارة أعمالك وتطويرها — كل شيء في مكان واحد.',
+    stat1: 'عملاء نشطون', stat2: 'متاح دائماً', stat3: 'مؤتمت بالكامل',
+    cardEyebrow: 'الدخول إلى المنصة',
+    cardTitle: 'مرحباً بك<br>في LynFlow.',
+    cardDesc: 'مساحة إدارتك جاهزة. ادخل إلى لوحة التحكم لإدارة نشاطك التجاري.',
+    secureText: 'اتصال آمن',
+    btnText: 'الدخول إلى المنصة',
+    btnLoading: 'جارٍ التحويل...',
+    cardFooter: 'سيتم تحويلك إلى <a href="https://app.lynflow.app">app.lynflow.app</a>'
+  }
+};
+
+function setLang(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+  document.documentElement.setAttribute('dir', lang==='ar'?'rtl':'ltr');
+  document.documentElement.setAttribute('lang', lang);
+  document.getElementById('eyebrow').textContent = t.eyebrow;
+  document.getElementById('heroTitle').innerHTML = t.heroTitle;
+  document.getElementById('heroSub').textContent = t.heroSub;
+  document.getElementById('stat1').textContent = t.stat1;
+  document.getElementById('stat2').textContent = t.stat2;
+  document.getElementById('stat3').textContent = t.stat3;
+  document.getElementById('cardEyebrow').textContent = t.cardEyebrow;
+  document.getElementById('cardTitle').innerHTML = t.cardTitle;
+  document.getElementById('cardDesc').textContent = t.cardDesc;
+  document.getElementById('secureText').textContent = t.secureText;
+  document.getElementById('btnText').textContent = t.btnText;
+  document.getElementById('cardFooter').innerHTML = t.cardFooter;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent===lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>
